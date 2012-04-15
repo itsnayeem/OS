@@ -2,11 +2,11 @@
    This program is used for all of the args-* tests.  Grading is
    done differently for each of the args-* tests based on the
    output. */
-
+#include <stdio.h>
 #include "tests/lib.h"
 
 int
-main (int argc, char *argv[]) 
+main (int argc, char *argv[])
 {
   int i;
 
