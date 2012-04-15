@@ -1,0 +1,22 @@
+#!/bin/bash
+
+cd build
+
+if [ $# -eq 2 ]
+then
+	set -x
+	pintos --filesys-size=2 -p $1/$2 -a $2 -- -f -q run $2
+	exit
+elif [ $# -eq 3 ]
+then
+	set -x
+	pintos --filesys-size=2 -p $1/$2 -a $2 -- -f -q run "$2 $3"
+	exit
+else
+	echo "  usage: $0 dir name args"
+	echo "example: $0 ../../examples echo hello" 
+	echo "example: $0 tests/userprog halt" 
+	exit
+fi
+
+

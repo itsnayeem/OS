@@ -9,8 +9,11 @@ typedef int pid_t;
 #define PID_ERROR ((pid_t) -1)
 
 /* Map region identifier. */
+#ifndef MAPID_T_DEFINED
+#define MAPID_T_DEFINED
 typedef int mapid_t;
 #define MAP_FAILED ((mapid_t) -1)
+#endif
 
 /* Maximum characters in a filename written by readdir(). */
 #define READDIR_MAX_LEN 14

@@ -4,6 +4,8 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
+#include "threads/fixed-point.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -80,6 +82,15 @@ typedef int tid_t;
    only because they are mutually exclusive: only a thread in the
    ready state is on the run queue, whereas only a thread in the
    blocked state is on a semaphore wait list. */
+
+/* Donation node */
+struct donation
+{
+    struct list_elem elem;
+    struct lock *resource;  /* when donation is active, points to lock */
+    int *priority;          /* always points to donating thread's active_priority */
+};
+
 struct thread
   {
     /* Owned by thread.c. */
@@ -87,11 +98,27 @@ struct thread
     enum thread_status status;          /* Thread state. */
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
-    int priority;                       /* Priority. */
+
+    int active_priority;                /* Priority. */
+
+    int base_priority;                  /* DONATION: stores base priority of thread */
+    struct lock *resource;              /* DONATION: pointer to resource that another thread donated for */
+    struct list donation_list;          /* DONATION: list of all donations to thread */
+    struct donation donation_content;   /* DONATION: thread's donation node which is added to another thread's
+                                                      donation list when it donates */
+
+    int nice;                           /* MLFQS: thread's niceness */
+    fixed_point_t recent_cpu;           /* MLFQS: thread's recent_cpu usage */
+
+    int64_t wake_tick;                  /* ALARM: tick number the thread will wake up at */
+    struct semaphore sem;               /* ALARM: dummy semaphore thread waits on to go to sleep */
+
     struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
+
+    struct list_elem sleeping_elem;     /* Elem to keep track of position in sleeping_list */
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -137,5 +164,11 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+
+bool priori_less (const struct list_elem *, const struct list_elem *, void *);
+void smart_yield (void);
+
+void thread_donate_priority (struct thread *, struct lock *);
+void thread_set_max_donation (struct thread *);
 
 #endif /* threads/thread.h */

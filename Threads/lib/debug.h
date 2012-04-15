@@ -37,3 +37,9 @@ void debug_backtrace_all (void);
 #define ASSERT(CONDITION) ((void) 0)
 #define NOT_REACHED() for (;;)
 #endif /* lib/debug.h */
+
+#ifdef SHOW_DEBUG
+#define DEBUG(x, args ...) printf(x, args)
+#else
+#define DEBUG(x, args ...)
+#endif
